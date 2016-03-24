@@ -62,8 +62,10 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                 };
 
                 $scope.checkboxClick = function ($event, id) {
-                    $scope.setSelectedItem(id);
-                    $event.stopImmediatePropagation();
+                  if (!$scope.setSelectedItem(id)) {
+                    $event.preventDefault();
+                  }
+                  $event.stopImmediatePropagation();
                 };
 
                 $scope.externalEvents = {
@@ -263,7 +265,7 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                         $scope.externalEvents.onItemSelect(finalObj);
                         if ($scope.settings.closeOnSelect) $scope.open = false;
 
-                        return;
+                        return true;
                     }
 
                     dontRemove = dontRemove || false;
@@ -273,11 +275,14 @@ directiveModule.directive('ngDropdownMultiselect', ['$filter', '$document', '$co
                     if (!dontRemove && exists) {
                         $scope.selectedModel.splice(_.findIndex($scope.selectedModel, findObj), 1);
                         $scope.externalEvents.onItemDeselect(findObj);
+                        return true;
                     } else if (!exists && ($scope.settings.selectionLimit === 0 || $scope.selectedModel.length < $scope.settings.selectionLimit)) {
                         $scope.selectedModel.push(finalObj);
                         $scope.externalEvents.onItemSelect(finalObj);
+                        return true;
                     }
                     if ($scope.settings.closeOnSelect) $scope.open = false;
+                    return false;
                 };
 
                 $scope.isChecked = function (id) {
